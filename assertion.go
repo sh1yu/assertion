@@ -783,6 +783,33 @@ func isEqual(expected, actual interface{}) bool {
 			}
 		}
 		return true
+	case interface{}:
+		expectedVal := reflect.ValueOf(expected)
+		actualVal := reflect.ValueOf(actual)
+		switch reflect.TypeOf(expected).Kind() {
+		case reflect.Array, reflect.Slice:
+			if expectedVal.Len() != actualVal.Len() {
+				return false
+			}
+			for i := 0; i < expectedVal.Len(); i++ {
+				if !isEqual(expectedVal.Index(i).Interface(), actualVal.Index(i).Interface()) {
+					return false
+				}
+			}
+			return true
+		case reflect.Map:
+			if expectedVal.Len() != actualVal.Len() {
+				return false
+			}
+			for _, key := range expectedVal.MapKeys() {
+				if !isEqual(expectedVal.MapIndex(key).Interface(), actualVal.MapIndex(key).Interface()) {
+					return false
+				}
+			}
+			return true
+		default:
+			return expected == actual
+		}
 	default:
 		return expected == actual
 	}
